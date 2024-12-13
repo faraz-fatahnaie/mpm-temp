@@ -26,15 +26,23 @@ class VoiceLivenessDetection:
             print(f"Error initializing model: {e}")
             raise
 
-    def load_audio_file(self, audio_file):
+    def load_audio_file(self, audio_input):
         """
-        Load audio from a file (MP3, OGG, WAV, etc.).
+        Load audio from a file or a NumPy array.
 
-        :param audio_file: Path to the audio file.
+        :param audio_input: Path to the audio file or a NumPy array.
         :return: Raw audio data as a NumPy array.
         """
         try:
-            audio_data, sample_rate = sf.read(audio_file)
+            if isinstance(audio_input, str):
+                # Load audio from file
+                audio_data, sample_rate = sf.read(audio_input)
+            elif isinstance(audio_input, np.ndarray):
+                # Assume audio is already a NumPy array with sample rate 16000 Hz
+                audio_data = audio_input
+                sample_rate = 16000  # Ensure compatibility with later resampling if needed
+            else:
+                raise ValueError("audio_input must be either a file path or a NumPy array.")
 
             # Resample to 16000 Hz if needed
             if sample_rate != 16000:
@@ -48,7 +56,7 @@ class VoiceLivenessDetection:
 
             return audio_data
         except Exception as e:
-            print(f"Error loading audio file: {e}")
+            print(f"Error loading audio input: {e}")
             raise
 
     def forward(self, input_file):
@@ -83,7 +91,7 @@ class VoiceLivenessDetection:
 
 if __name__ == "__main__":
     # Example usage:
-    onnx_model_path = "C:\\Users\\faraz\\PycharmProjects\\face_ekyc\\services\\modules\\models\\wav2vec2-large-xlsr-53-persian.onnx"
+    onnx_model_path = "./trained_model/wav2vec2-large-xlsr-53-persian.onnx"
     input_file = "./file/test2.ogg"
 
     voice_liveness = VoiceLivenessDetection(onnx_model_path)
