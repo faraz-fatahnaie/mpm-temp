@@ -13,11 +13,6 @@ ort.set_default_logger_severity(3)
 
 class Verification:
     def __init__(self, arc_face, retina_face):
-        self.ref_img = None
-        self.embed_ref = None
-        self.face_ref = None
-        self.flag_verification = None
-        self.flag_existence = None
         self.has_error = False
 
         self.arc_face = self._initialize_model(arc_face, "ArcFace embedding")
