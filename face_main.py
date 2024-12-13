@@ -21,27 +21,16 @@ class Verification:
     def __init__(
             self,
             arc_face,
-            retina_face,
-            ref_img_path: str = None,
-            sim_threshold: float = 0.35
+            retina_face
     ):
 
-        self.ref_img_path = ref_img_path
         self.ref_img = None
         self.embed_ref = None
         self.face_ref = None
 
-        # self.usr_img_path = None
-        # self.usr_img = None
-        # self.usr_frames_np = None
-
-        self.sim_threshold = sim_threshold
-        self.sim = 0
-
         self.flag_verification = None
         self.flag_existence = None
 
-        # Controlling flag
         self.has_error = False
 
         if not self.has_error:
@@ -133,92 +122,6 @@ class Verification:
                 error=errors.ERROR_1006_PARAMETER_NOT_GIVEN,
                 sources=f"{p_type} image/video path",
             )
-
-    def single_frame_verification(self, usr_img_path: str = None):
-
-        # Check user image path and file
-        self.usr_img_path = usr_img_path
-        self.check_path(self.usr_img_path, p_type="user")
-
-        # Read user image
-        if not self.has_error:
-            try:
-                usr_img = cv2.imread(self.usr_img_path)
-                print("User image read successfully.")
-
-                # Check reference image array is RGB
-                if len(np.shape(usr_img)) == 3:
-                    self.usr_img = usr_img
-                else:
-                    self.make_error(
-                        error=errors.ERROR_1003_UNEXPECTED_PARAMETER_ERROR,
-                        sources="user image shape",
-                    )
-
-            except:
-                self.make_error(
-                    error=errors.ERROR_1005_UNEXPECTED_ERROR,
-                    sources="reading user image",
-                )
-
-        # single frame verification
-        if not self.has_error:
-            try:
-                face_usr, bbox_usr = self.detection(self.usr_img)
-
-                if len(bbox_usr) != 0:
-                    print("Face detected in user image.")
-                    self.flag_existence = True
-
-                    try:
-                        embed_usr = self.arc_face.get_feat(face_usr)
-                        if embed_usr.shape[1] == 512:
-                            print(
-                                "User embedding calculated successfully."
-                            )
-
-                            try:
-                                self.sim = self.arc_face.compute_sim(
-                                    self.embed_ref, embed_usr
-                                )
-
-                                if self.sim >= self.sim_threshold:
-                                    self.flag_verification = True
-                                    print("Similarity is over threshold.")
-                                else:
-                                    self.flag_verification = False
-                                    print("Similarity is under threshold.")
-
-                            except:
-                                self.make_error(
-                                    error=errors.ERROR_1005_UNEXPECTED_ERROR,
-                                    sources="computing similarity",
-                                )
-
-                        else:
-                            self.make_error(
-                                error=errors.ERROR_1003_UNEXPECTED_PARAMETER_ERROR,
-                                sources="user embedding shape",
-                            )
-                    except:
-                        self.make_error(
-                            error=errors.ERROR_1005_UNEXPECTED_ERROR,
-                            sources="user embedding calculation",
-                        )
-
-                else:
-                    self.make_error(
-                        error=errors.ERROR_1005_UNEXPECTED_ERROR,
-                        sources="no face detected in user image",
-                    )
-
-            except:
-                self.make_error(
-                    error=errors.ERROR_1005_UNEXPECTED_ERROR,
-                    sources="single frame verification",
-                )
-
-        return True
 
     def calculate_similarity(self, img_path1: str, img_path2: str):
         """
@@ -334,14 +237,6 @@ class Verification:
 
         return None
 
-    def get_result(self):
-        return {
-            "flag_existence": self.flag_existence,
-            "flag_verification": self.flag_verification,
-            "similarity": self.sim,
-            "has_error": self.has_error,
-        }
-
 if __name__ == "__main__":
 
     image_path = "./file/test1.jpg"
@@ -357,8 +252,7 @@ if __name__ == "__main__":
 
     verif = Verification(
         arc_face=arc_face,
-        retina_face=retina_face,
-        ref_img_path=image_path,
+        retina_face=retina_face
     )
 
     img = verif.read_image(image_path)
