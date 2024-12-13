@@ -24,8 +24,9 @@ class Verification:
         try:
             print(f"{model_name} loaded.")
             return model
-        except Exception:
+        except Exception as e:
             self.make_error(errors.ERROR_1005_UNEXPECTED_ERROR, f"initializing {model_name}")
+            print(e)
 
     def read_image(self, image_path: str):
         self.check_path(image_path, p_type="reference")
@@ -38,11 +39,11 @@ class Verification:
                 self.make_error(errors.ERROR_1003_UNEXPECTED_PARAMETER_ERROR, "reading image")
                 return None
 
-            self.ref_img = image
             print(f"Image loaded successfully from {image_path}.")
             return image
-        except Exception:
+        except Exception as e:
             self.make_error(errors.ERROR_1005_UNEXPECTED_ERROR, "reading image")
+            print(e)
             return None
 
     def make_error(self, error, sources: str):
